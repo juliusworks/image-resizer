@@ -116,6 +116,7 @@ The available variables are as follows:
   // Logging options
   LOG_PREFIX: 'resizer',
   QUEUE_LOG: true,
+  IR_LOG: true,
 
   // Response settings
   CACHE_DEV_REQUESTS: false,
@@ -231,7 +232,7 @@ EXTERNAL_SOURCE_WIKIPEDIA: 'https://upload.wikimedia.org/wikipedia/'
 Then you can request images beginning with the provided path using the `ewikipedia` modifier, eg:
 
     http://my.cdn.com/ewikipedia/en/7/70/Example.png
-    
+
 translates to:
 
     https://upload.wikimedia.org/wikipedia/en/7/70/Example.png

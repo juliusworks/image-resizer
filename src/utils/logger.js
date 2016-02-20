@@ -1,6 +1,6 @@
 'use strict';
 
-var env, chalk, _, slice, prefix, queueLog, args;
+var env, chalk, _, slice, prefix, queueLog, args, silent;
 
 env       = require('../config/environment_vars');
 chalk     = require('chalk');
@@ -8,6 +8,7 @@ _         = require('lodash');
 slice     = [].slice;
 prefix    = env.LOG_PREFIX;
 queueLog  = env.QUEUE_LOG;
+silent    = env.IR_LOG;
 
 chalk.enabled = true;
 
@@ -61,6 +62,11 @@ Logger.prototype.timeEnd = function(key){
 
 Logger.prototype.flush = function(){
   if (this.queue.length === 0){
+    return;
+  }
+
+  if (silent) {
+    this.queue = null;
     return;
   }
 

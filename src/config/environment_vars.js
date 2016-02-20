@@ -50,6 +50,7 @@ vars = {
   // Logging options
   LOG_PREFIX: 'resizer',
   QUEUE_LOG: true,
+  IR_LOG: true,
 
   // Response settings
   CACHE_DEV_REQUESTS: false,

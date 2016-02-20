@@ -68,7 +68,7 @@ ResponseWriter.prototype._write = function (image) {
 
   if (image.modifiers.action === 'json') {
     if (this.shouldCacheResponse()){
-      this.response.setHeader('Cache-Control', 'public');
+      this.response.setHeader('Cache-Control', 'public, max-age=' + env.JSON_EXPIRY);
       this.response.setHeader('Expires', this.expiresIn(env.JSON_EXPIRY));
       this.response.setHeader('Last-Modified', (new Date(1000)).toGMTString());
       this.response.setHeader('Vary', 'Accept-Encoding');
@@ -83,7 +83,7 @@ ResponseWriter.prototype._write = function (image) {
   }
 
   if (this.shouldCacheResponse()) {
-    this.response.setHeader('Cache-Control', 'public');
+    this.response.setHeader('Cache-Control', 'public, max-age=' + image.expiry);
     this.response.setHeader('Expires', this.expiresIn(image.expiry));
     this.response.setHeader('Last-Modified', (new Date(1000)).toGMTString());
     this.response.setHeader('Vary', 'Accept-Encoding');

@@ -59,7 +59,8 @@ ResponseWriter.prototype._write = function (image) {
       fs.createReadStream(env.IMAGE_404).pipe(this.response);
     }
     else {
-      this.response.status(statusCode).end();
+      this.response.status(statusCode)
+      this.response.end();
     }
 
     return;
@@ -74,7 +75,8 @@ ResponseWriter.prototype._write = function (image) {
     }
 
     this.response.setHeader('Content-Type', 'application/json');
-    this.response.status(200).end(image.contents);
+    this.response.status(200)
+    this.response.end(image.contents);
     image.log.flush();
 
     return this.end();
@@ -114,7 +116,8 @@ ResponseWriter.prototype._write = function (image) {
       image.log.log('checksum', shasum.digest('hex'));
     }
 
-    this.response.status(200).end(image.contents);
+    this.response.status(200);
+    this.response.end(image.contents);
   }
 
   // flush the log messages and close the connection

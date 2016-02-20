@@ -30,7 +30,7 @@ function Image(request, options){
   this.error = null;
 
   // set a mark for the start of the process
-  this.mark = process.hrtime();
+  this.mark = Date.now();
 
   // determine the name and format (mime) of the requested image
   this.parseImage(request);

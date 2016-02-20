@@ -80,8 +80,9 @@ Logger.prototype.flush = function(){
       });
       break;
     case 'time':
+
       log += chalk.cyan(
-        item.key + ' - ' + chalk.bold(item.time.toString()) + 'ms'
+        item.key + ' - ' + chalk.bold(item.time[0] + 's ' + item.time[1]/1000000 + 'ms')
       );
       break;
     }

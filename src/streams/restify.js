@@ -89,7 +89,7 @@ ResponseWriter.prototype._write = function (image) {
     this.response.setHeader('Vary', 'Accept-Encoding');
   }
 
-  this.response.setHeader('Content-Type', 'application/' + image.format);
+  this.response.setHeader('Content-Type', 'image/' + image.format);
 
   if (image.isStream()) {
     image.contents.pipe(this.response);

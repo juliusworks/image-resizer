@@ -91,10 +91,10 @@ exports.cropFill = function(modifiers, size){
       cropWidth, cropHeight,
       crop;
 
-  if (modifiers.width === null){
+  if (modifiers.width === null) {
     modifiers.width = modifiers.height;
   }
-  if (modifiers.height === null){
+  if (modifiers.height === null) {
     modifiers.height = modifiers.width;
   }
 

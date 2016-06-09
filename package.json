@@ -1,6 +1,6 @@
 {
   "name": "image-resizer-makeomatic",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "description": "On-the-fly image resizing and optimization using node and sharp (libvips).",
   "main": "index.js",
   "scripts": {
@@ -37,7 +37,7 @@
     "errorhandler": "^1.0.1",
     "etag": "^1.7.0",
     "express": "^4.9.7",
-    "gcloud": "^0.28.0",
+    "gcloud": "^0.35.0",
     "glob": "^7.0.0",
     "image-type": "^2.0.2",
     "lodash": "^4.5.0",
@@ -45,7 +45,7 @@
     "mkdirp": "^0.5.0",
     "morgan": "^1.0.1",
     "request": "^2.69.0",
-    "sharp": "^0.14.0",
+    "sharp": "^0.15.0",
     "twit": "^2.2.2"
   },
   "devDependencies": {

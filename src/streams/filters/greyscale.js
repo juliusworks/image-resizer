@@ -1,14 +1,9 @@
-'use strict';
+const sharp = require('sharp');
 
-var sharp = require('sharp');
-
-
-module.exports = function(image, callback){
-
+module.exports = (image, callback) => {
   // create the sharp object
-  var r = sharp(image.contents);
+  const r = sharp(image.contents);
 
   // apply the filter and pass on the stream
   r.gamma().greyscale().toBuffer(callback);
-
 };

@@ -47,101 +47,92 @@ Crop modifiers:
      - padding added on top/bottom or left/right as needed (color is configurable)
 
 */
-'use strict';
 
+const _ = require('lodash');
+const string = require('../utils/string');
+const filters = require('../streams/filters');
+const sources = require('../streams/sources');
+const environment = require('../config/environment_vars');
+const fs = require('fs');
 
-var _, string, filters, sources, filterKeys, sourceKeys, modifierMap,
-    modKeys, env, environment, fs, namedModifierMap;
+const filterKeys = _.keys(filters);
+const sourceKeys = _.keys(sources).concat(_.keys(environment.externalSources));
 
-_          = require('lodash');
-string     = require('../utils/string');
-filters    = require('../streams/filters');
-sources    = require('../streams/sources');
-filterKeys = _.keys(filters);
-environment = require('../config/environment_vars');
-sourceKeys = _.keys(sources).concat(_.keys(environment.externalSources));
-fs         = require('fs');
-
-
-modifierMap = [
+const modifierMap = [
   {
     key: 'h',
     desc: 'height',
-    type: 'integer'
+    type: 'integer',
   },
   {
     key: 'w',
     desc: 'width',
-    type: 'integer'
+    type: 'integer',
   },
   {
     key: 's',
     desc: 'square',
-    type: 'integer'
+    type: 'integer',
   },
   {
     key: 'y',
     desc: 'top',
-    type: 'integer'
+    type: 'integer',
   },
   {
     key: 'x',
     desc: 'left',
-    type: 'integer'
+    type: 'integer',
   },
   {
     key: 'g',
     desc: 'gravity',
     type: 'string',
-    values: ['c','n','s','e','w','ne','nw','se','sw'],
-    default: 'c'
+    values: ['c', 'n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'],
+    default: 'c',
   },
   {
     key: 'c',
     desc: 'crop',
     type: 'string',
-    values: ['fit','fill','cut','scale','pad'],
-    default: 'fit'
+    values: ['fit', 'fill', 'cut', 'scale', 'pad'],
+    default: 'fit',
   },
   {
     key: 'e',
     desc: 'external',
     type: 'string',
     values: sourceKeys,
-    default: environment.DEFAULT_SOURCE
+    default: environment.DEFAULT_SOURCE,
   },
   {
     key: 'f',
     desc: 'filter',
     type: 'string',
-    values: filterKeys
+    values: filterKeys,
   },
   {
     key: 'q',
     desc: 'quality',
     type: 'integer',
     range: [1, 100],
-    default: environment.IMAGE_QUALITY
-  }
+    default: environment.IMAGE_QUALITY,
+  },
 ];
 
 exports.map = modifierMap;
 
-modKeys = _.map(modifierMap, function(value){
-  return value.key;
-});
+const modKeys = _.map(modifierMap, value => value.key);
 
-
-function inArray(key, array){
+function inArray(key, array) {
   return _.includes(array, key);
 }
 
-function getModifier(key){
-  var i, mod;
-
-  for (i in modifierMap){
-    mod = modifierMap[i];
-    if (mod.key === key){
+function getModifier(key) {
+  // eslint-disable-next-line
+  for (const i in modifierMap) {
+    const mod = modifierMap[i];
+    if (mod.key === key) {
       return mod;
     }
   }
@@ -151,177 +142,163 @@ function getModifier(key){
 exports.mod = getModifier;
 
 // Check to see if there is a config file of named modifier aliases
-if (fs.existsSync(process.cwd() + '/named_modifiers.json')){
-  var file = fs.readFileSync(process.cwd() + '/named_modifiers.json');
+let namedModifierMap;
+if (fs.existsSync(`${process.cwd()}/named_modifiers.json`)) {
+  const file = fs.readFileSync(`${process.cwd()}/named_modifiers.json`);
   namedModifierMap = JSON.parse(file);
 }
 
 
 // Take an array of modifiers and parse the keys and values into mods hash
 function parseModifiers(mods, modArr) {
-  var key, value, mod;
+  let key;
+  let value;
+  let mod;
 
-  _.each(modArr, function(item){
+  _.each(modArr, (item) => {
     key = item[0];
     value = item.slice(1);
 
-    if (inArray(key, modKeys)){
-
+    if (inArray(key, modKeys)) {
       // get the modifier object that responds to the listed key
       mod = getModifier(key);
 
-      //this is a limit enforced by sharp. the application will crash without
-      //these checks.
-      var dimensionLimit = 16383;
+      // this is a limit enforced by sharp. the application will crash without
+      // these checks.
+      const dimensionLimit = 16383;
 
-      switch(mod.desc){
-      case 'height':
-        mods.height = string.sanitize(value);
-        if (mods.height > dimensionLimit) {
-          mods.height = dimensionLimit;
-        }
-        mods.hasModStr = true;
-        break;
-      case 'width':
-        mods.width = string.sanitize(value);
-        if (mods.width > dimensionLimit) {
-          mods.width = dimensionLimit;
-        }
-        mods.hasModStr = true;
-        break;
-      case 'square':
-        mods.action = 'square';
-        mods.height = string.sanitize(value);
-        mods.width = string.sanitize(value);
-        mods.hasModStr = true;
-        break;
-      case 'gravity':
-        value = string.sanitize(value, 'alpha');
-        if (inArray(value.toLowerCase(), mod.values)){
-          mods.gravity = value.toLowerCase();
-        }
-        mods.hasModStr = true;
-        break;
-      case 'top':
-        mods.y = string.sanitize(value);
-        mods.hasModStr = true;
-        break;
-      case 'left':
-        mods.x = string.sanitize(value);
-        mods.hasModStr = true;
-        break;
-      case 'crop':
-        value = string.sanitize(value, 'alpha');
-        if (inArray(value.toLowerCase(), mod.values)){
-          mods.crop = value.toLowerCase();
-        }
-        mods.hasModStr = true;
-        break;
-      case 'external':
-        value = string.sanitize(value, 'alphanumeric');
-        if (inArray(value.toLowerCase(), mod.values)){
-          mods.external = value.toLowerCase();
-        }
-        mods.hasModStr = true;
-        break;
-      case 'filter':
-        value = string.sanitize(value, 'alpha');
-        if (inArray(value.toLowerCase(), mod.values)){
-          mods.filter = value.toLowerCase();
-        }
-        mods.hasModStr = true;
-        break;
-      case 'quality':
-        value = string.sanitize(value);
-        if(!isNaN(value)) {
-          var min = mod.range[0],
-            max = mod.range[1];
-          mods.quality = Math.max(min, Math.min(max, value));
-        }
-        mods.hasModStr = true;
-        break;
+      // eslint-disable-next-line default-case
+      switch (mod.desc) {
+        case 'height':
+          mods.height = string.sanitize(value);
+          if (mods.height > dimensionLimit) {
+            mods.height = dimensionLimit;
+          }
+          mods.hasModStr = true;
+          break;
+        case 'width':
+          mods.width = string.sanitize(value);
+          if (mods.width > dimensionLimit) {
+            mods.width = dimensionLimit;
+          }
+          mods.hasModStr = true;
+          break;
+        case 'square':
+          mods.action = 'square';
+          mods.height = string.sanitize(value);
+          mods.width = string.sanitize(value);
+          mods.hasModStr = true;
+          break;
+        case 'gravity':
+          value = string.sanitize(value, 'alpha');
+          if (inArray(value.toLowerCase(), mod.values)) {
+            mods.gravity = value.toLowerCase();
+          }
+          mods.hasModStr = true;
+          break;
+        case 'top':
+          mods.y = string.sanitize(value);
+          mods.hasModStr = true;
+          break;
+        case 'left':
+          mods.x = string.sanitize(value);
+          mods.hasModStr = true;
+          break;
+        case 'crop':
+          value = string.sanitize(value, 'alpha');
+          if (inArray(value.toLowerCase(), mod.values)) {
+            mods.crop = value.toLowerCase();
+          }
+          mods.hasModStr = true;
+          break;
+        case 'external':
+          value = string.sanitize(value, 'alphanumeric');
+          if (inArray(value.toLowerCase(), mod.values)) {
+            mods.external = value.toLowerCase();
+          }
+          mods.hasModStr = true;
+          break;
+        case 'filter':
+          value = string.sanitize(value, 'alpha');
+          if (inArray(value.toLowerCase(), mod.values)) {
+            mods.filter = value.toLowerCase();
+          }
+          mods.hasModStr = true;
+          break;
+        case 'quality':
+          value = string.sanitize(value);
+          if (!isNaN(value)) {
+            const min = mod.range[0];
+            const max = mod.range[1];
+            mods.quality = Math.max(min, Math.min(max, value));
+          }
+          mods.hasModStr = true;
+          break;
       }
-
     }
   });
 
   return mods;
 }
 
+// check to see if
+// a max image dimension has been specified
+// and limits the current dimension to that maximum
+const limitDimension = (dimension, mods, env) => {
+  if (!env.MAX_IMAGE_DIMENSION) {
+    return mods;
+  }
+  const maxDimension = parseInt(env.MAX_IMAGE_DIMENSION, 10);
+  if (dimension in mods && mods[dimension] > 0) {
+    mods[dimension] = Math.min(maxDimension, mods[dimension]);
+  } else {
+    mods[dimension] = maxDimension;
+  }
+  if (mods.action === 'original') {
+    // override to 'resizeOriginal' type
+    mods.action = 'resizeOriginal';
+  }
+  return mods;
+};
+
 /**
  * @param {Object} mods
  * @return {Object} mods with limited width /height
  */
-var limitMaxDimension = function(mods, env){
-  // check to see if
-  // a max image dimension has been specified
-  // and limits the current dimension to that maximum
-  var limitDimension = function(dimension, mods){
-    if(!env.MAX_IMAGE_DIMENSION){
-      return mods;
-    }
-    var maxDimension = parseInt(env.MAX_IMAGE_DIMENSION, 10);
-    if(dimension in mods && mods[dimension] > 0){
-      mods[dimension] = Math.min(maxDimension, mods[dimension]);
-    }else{
-      mods[dimension] = maxDimension;
-    }
-    if(mods.action === 'original'){
-      // override to 'resizeOriginal' type
-      mods.action = 'resizeOriginal';
-    }
-    return mods;
-  };
-
+const limitMaxDimension = (mods, env) => (
   // limit height and width
   // in the mods
-  mods = limitDimension(
-    'width',
-    limitDimension(
-      'height', mods
-    )
-  );
-  return mods;
-};
+  limitDimension('width', limitDimension('height', mods, env), env)
+);
 
 // Exposed method to parse an incoming URL for modifiers, can add a map of
 // named (preset) modifiers if need be (mostly just for unit testing). Named
 // modifiers are usually added via config json file in root of application.
-exports.parse = function(requestUrl, namedMods, envOverride){
-  // override 'env' for testing
-  if(typeof envOverride !== 'undefined'){
-    env = _.clone(envOverride);
-  } else {
-    env = _.clone(environment);
-  }
-
-  var segments, mods, modStr, image, gravity, crop, quality;
-
-  gravity   = getModifier('g');
-  crop      = getModifier('c');
-  quality   = getModifier('q');
-  segments  = requestUrl.replace(/^\//,'').split('/');
-  modStr    = _.first(segments);
-  image     = _.last(segments).toLowerCase();
-  namedMods = typeof namedMods === 'undefined' ? namedModifierMap : namedMods;
-
+exports.parse = (requestUrl, namedMods = namedModifierMap, envOverride = environment) => {
+  const env = _.clone(envOverride);
+  const gravity = getModifier('g');
+  const crop = getModifier('c');
+  const quality = getModifier('q');
+  const segments = requestUrl.replace(/^\//, '').split('/');
+  const modStr = _.first(segments);
+  const image = _.last(segments).toLowerCase();
 
   // set the mod keys and defaults
-  mods = {
+  let mods = {
     action: 'original',
     height: null,
     width: null,
     gravity: gravity.default,
     crop: crop.default,
     quality: quality.default,
-    hasModStr: false
+    hasModStr: false,
   };
 
   // check the request to see if it includes a named modifier
-  if (namedMods && !_.isEmpty(namedMods)){
-    if (_.has(namedMods, modStr)){
-      _.forEach(namedMods[modStr], function(value, key){
-        if (key === 'square'){
+  if (namedMods && !_.isEmpty(namedMods)) {
+    if (_.has(namedMods, modStr)) {
+      _.forEach(namedMods[modStr], (value, key) => {
+        if (key === 'square') {
           mods.action = 'square';
           mods.height = value;
           mods.width = value;
@@ -340,21 +317,21 @@ exports.parse = function(requestUrl, namedMods, envOverride){
 
 
   // check to see if this a metadata call, it trumps all other requested mods
-  if (image.slice(-5) === '.json'){
+  if (image.slice(-5) === '.json') {
     mods.action = 'json';
     return mods;
   }
 
-  if (mods.action === 'square'){
+  if (mods.action === 'square') {
     // make sure crop is set to the default
     mods.crop = 'fill';
     return limitMaxDimension(mods, env);
   }
 
-  if (mods.height !== null || mods.width !== null){
+  if (mods.height !== null || mods.width !== null) {
     mods.action = 'resize';
 
-    if (mods.crop !== crop.default){
+    if (mods.crop !== crop.default) {
       mods.action = 'crop';
     }
     if (mods.gravity !== gravity.default) {

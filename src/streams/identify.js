@@ -1,39 +1,30 @@
-'use strict';
+const sharp = require('sharp');
+const map = require('map-stream');
 
-var sharp = require('sharp');
-var map   = require('map-stream');
+module.exports = () => map((image, callback) => {
+  if (image.isError()) {
+    return callback(null, image);
+  }
 
+  if (image.modifiers.action !== 'json') {
+    image.log.log('identify:', image.log.colors.bold('no identify'));
+    return callback(null, image);
+  }
 
-module.exports = function(){
+  const handleResponse = (err, data) => {
+    image.log.timeEnd('identify');
 
-  return map( function(image, callback){
-
-    if ( image.isError() ){
-      return callback(null, image);
+    if (err) {
+      image.log.error('identify error', err);
+      image.error = new Error(err);
+    } else {
+      image.contents = data;
     }
 
-    if ( image.modifiers.action !== 'json' ){
-      image.log.log('identify:', image.log.colors.bold('no identify'));
-      return callback(null, image);
-    }
+    callback(null, image);
+  };
 
-    var handleResponse = function (err, data) {
-      image.log.timeEnd('identify');
+  image.log.time('identify');
 
-      if (err) {
-        image.log.error('identify error', err);
-        image.error = new Error(err);
-      }
-      else {
-        image.contents = data;
-      }
-
-      callback(null, image);
-    };
-
-    image.log.time('identify');
-
-    sharp(image.contents).metadata(handleResponse);
-  });
-
-};
+  return sharp(image.contents).metadata(handleResponse);
+});

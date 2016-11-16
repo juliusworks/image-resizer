@@ -1,76 +1,73 @@
-'use strict';
+/* eslint-disable no-console */
 
-var env, s3, stream, util, client, bucket;
+let client;
+let bucket;
 
-env    = require('../../config/environment_vars');
-s3     = require('aws-sdk').S3;
-stream = require('stream');
-util   = require('util');
+const env = require('../../config/environment_vars');
+const S3 = require('aws-sdk').S3;
+const stream = require('stream');
+const util = require('util');
 
 try {
   // create an AWS S3 client with the config data
-  client = new s3({
+  client = new S3({
     accessKeyId: env.AWS_ACCESS_KEY_ID,
     secretAccessKey: env.AWS_SECRET_ACCESS_KEY,
-    region: env.AWS_REGION
+    region: env.AWS_REGION,
   });
   bucket = env.S3_BUCKET;
-} catch(e) {
-
+} catch (e) {
+  console.info('s3 is not available', e.message);
+  // we do not have s3 data
 }
 
 
-function s3Stream(image){
-  /* jshint validthis:true */
-  if (!(this instanceof s3Stream)){
-    return new s3Stream(image);
+function S3Stream(image) {
+  if (!(this instanceof S3Stream)) {
+    return new S3Stream(image);
   }
-  stream.Readable.call(this, { objectMode : true });
+
+  stream.Readable.call(this, { objectMode: true });
   this.image = image;
   this.ended = false;
 }
 
-util.inherits(s3Stream, stream.Readable);
+util.inherits(S3Stream, stream.Readable);
 
-s3Stream.prototype._read = function(){
-  var _this = this;
-
-  if ( this.ended ){ return; }
+S3Stream.prototype._read = function read() {
+  if (this.ended) return null;
 
   // pass through if there is an error on the image object
-  if (this.image.isError()){
+  if (this.image.isError()) {
     this.ended = true;
     this.push(this.image);
     return this.push(null);
   }
 
   // Set the AWS options
-  var awsOptions = {
+  const awsOptions = {
     Bucket: bucket,
-    Key: this.image.path.replace(/^\//,'')
+    Key: this.image.path.replace(/^\//, ''),
   };
 
   this.image.log.time('s3');
 
-  client.getObject(awsOptions, function(err, data){
-    _this.image.log.timeEnd('s3');
+  return client.getObject(awsOptions, (err, data) => {
+    this.image.log.timeEnd('s3');
 
     // if there is an error store it on the image object and pass it along
     if (err) {
-      _this.image.error = err;
+      this.image.error = err;
+    } else {
+      // if not store the image buffer
+      this.image.contents = data.Body;
+      this.image.originalContentLength = data.Body.length;
     }
 
-    // if not store the image buffer
-    else {
-      _this.image.contents = data.Body;
-      _this.image.originalContentLength = data.Body.length;
-    }
-
-    _this.ended = true;
-    _this.push(_this.image);
-    _this.push(null);
+    this.ended = true;
+    this.push(this.image);
+    this.push(null);
   });
 };
 
-
-module.exports = s3Stream;
+module.exports = S3Stream;

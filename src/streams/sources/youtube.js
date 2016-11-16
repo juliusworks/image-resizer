@@ -1,17 +1,13 @@
-'use strict';
+const stream = require('stream');
+const util = require('util');
+const env = require('../../config/environment_vars');
 
-var stream, util, env;
-
-stream  = require('stream');
-util    = require('util');
-env     = require('../../config/environment_vars');
-
-function Youtube(image){
-  /* jshint validthis:true */
-  if (!(this instanceof Youtube)){
+function Youtube(image) {
+  if (!(this instanceof Youtube)) {
     return new Youtube(image);
   }
-  stream.Readable.call(this, { objectMode : true });
+
+  stream.Readable.call(this, { objectMode: true });
   this.image = image;
   this.ended = false;
   this.key = 'youtube';
@@ -22,25 +18,22 @@ function Youtube(image){
 
 util.inherits(Youtube, stream.Readable);
 
-Youtube.prototype._read = function(){
-  var _this = this,
-      url, videoId;
-
-  if ( this.ended ){ return; }
+Youtube.prototype._read = function read() {
+  if (this.ended) return null;
 
   // pass through if there is an error on the image object
-  if (this.image.isError()){
+  if (this.image.isError()) {
     this.ended = true;
     this.push(this.image);
     return this.push(null);
   }
 
-  videoId = this.image.image.split('.')[0];
-  url = 'http://img.youtube.com/vi/' + videoId + '/hqdefault.jpg';
+  const videoId = this.image.image.split('.')[0];
+  const url = `http://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
   this.image.log.time(this.key);
-  require('./util/fetch')(_this, url);
-};
 
+  return require('./util/fetch')(this, url);
+};
 
 module.exports = Youtube;
 

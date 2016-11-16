@@ -1,31 +1,25 @@
-'use strict';
-
-var _, Logger, env, modifiers, stream, util, imgType;
-
-_         = require('lodash');
-Logger    = require('./utils/logger');
-env       = require('./config/environment_vars');
-modifiers = require('./lib/modifiers');
-stream    = require('stream');
-util      = require('util');
-imgType   = require('image-type');
-
+const _ = require('lodash');
+const Logger = require('./utils/logger');
+const env = require('./config/environment_vars');
+const modifiers = require('./lib/modifiers');
+const stream = require('stream');
+const util = require('util');
+const imgType = require('image-type');
 
 // Simple stream to represent an error at an early stage, for instance a
 // request to an excluded source.
-function ErrorStream(image){
-  stream.Readable.call(this, { objectMode : true });
+function ErrorStream(image) {
+  stream.Readable.call(this, { objectMode: true });
   this.image = image;
 }
 util.inherits(ErrorStream, stream.Readable);
 
-ErrorStream.prototype._read = function(){
+ErrorStream.prototype._read = function read() {
   this.push(this.image);
   this.push(null);
 };
 
-
-function Image(request, options){
+function Image(request, options) {
   // placeholder for any error objects
   this.error = null;
 
@@ -57,13 +51,13 @@ function Image(request, options){
   this.log = new Logger();
 }
 
-Image.validInputFormats  = ['jpeg', 'jpg', 'gif', 'png', 'webp'];
+Image.validInputFormats = ['jpeg', 'jpg', 'gif', 'png', 'webp'];
 Image.validOutputFormats = ['jpeg', 'png', 'webp'];
 
 // Determine the name and format of the requested image
-Image.prototype.parseImage = function(request){
-  var fileStr = _.last(request.path.split('/'));
-  var exts = fileStr.split('.');
+Image.prototype.parseImage = function parseImage(request) {
+  let fileStr = _.last(request.path.split('/'));
+  const exts = fileStr.split('.');
 
   // clean out any metadata format
   if (exts[exts.length - 1] === 'json') {
@@ -74,8 +68,8 @@ Image.prototype.parseImage = function(request){
 
   // if path contains valid output format, remove it from path
   if (exts.length >= 3) {
-    var inputFormat = exts[exts.length - 2].toLowerCase();
-    var outputFormat = exts.pop().toLowerCase();
+    const inputFormat = exts[exts.length - 2].toLowerCase();
+    const outputFormat = exts.pop().toLowerCase();
 
     if (_.indexOf(Image.validInputFormats, inputFormat) > -1 &&
         _.indexOf(Image.validOutputFormats, outputFormat) > -1) {
@@ -84,13 +78,12 @@ Image.prototype.parseImage = function(request){
     }
   }
 
-  this.image  = fileStr;
+  this.image = fileStr;
 };
 
-
 // Determine the file path for the requested image
-Image.prototype.parseUrl = function(request){
-  var parts = request.path.replace(/^\//,'').split('/');
+Image.prototype.parseUrl = function parseUrl(request) {
+  const parts = request.path.replace(/^\//, '').split('/');
 
   // overwrite the image name with the parsed version so metadata requests do
   // not mess things up
@@ -107,102 +100,93 @@ Image.prototype.parseUrl = function(request){
   this.path = decodeURI(this.path);
 };
 
+Image.prototype.isError = function isError() {
+  return this.error !== null;
+};
 
-Image.prototype.isError = function(){ return this.error !== null; };
-
-
-Image.prototype.isStream = function(){
-  var Stream = require('stream').Stream;
+Image.prototype.isStream = function isStream() {
+  const Stream = require('stream').Stream;
   return !!this.contents && this.contents instanceof Stream;
 };
 
-
-Image.prototype.isBuffer = function(){
+Image.prototype.isBuffer = function isBuffer() {
   return !!this.contents && Buffer.isBuffer(this.contents);
 };
 
+Image.prototype.getFile = () => {
+  const sources = require('./streams/sources');
+  const excludes = env.EXCLUDE_SOURCES ? env.EXCLUDE_SOURCES.split(',') : [];
 
-Image.prototype.getFile = function(){
-  var sources = require('./streams/sources'),
-      excludes = env.EXCLUDE_SOURCES ? env.EXCLUDE_SOURCES.split(',') : [],
-      streamType = env.DEFAULT_SOURCE,
-      Stream = null;
+  let streamType = env.DEFAULT_SOURCE;
+  let Stream = null;
 
   // look to see if the request has a specified source
-  if (_.has(this.modifiers, 'external')){
-    if (_.has(sources, this.modifiers.external) || _.has(env.externalSources, this.modifiers.external)){
+  if (_.has(this.modifiers, 'external')) {
+    if (_.has(sources, this.modifiers.external) || _.has(env.externalSources, this.modifiers.external)) {
       streamType = this.modifiers.external;
     }
   }
 
   // if this request is for an excluded source create an ErrorStream
-  if (excludes.indexOf(streamType) > -1){
-    this.error = new Error(streamType + ' is an excluded source');
+  if (excludes.indexOf(streamType) > -1) {
+    this.error = new Error(`${streamType} is an excluded source`);
     Stream = ErrorStream;
-  }
-
-  // if all is well find the appropriate stream
-  else {
-    if (_.has(sources, streamType)){
-      this.log.log('new stream created!');
-      Stream = sources[streamType];
-    } else if (_.has(env.externalSources, streamType)){
-      this.log.log('new external stream created!');
-      Stream = sources.external;
-      return new Stream(this, streamType, env.externalSources[streamType]);
-    } else {
-      this.error = new Error(streamType + ' is not a valid source');
-      Stream = ErrorStream;
-    }
+  } else if (_.has(sources, streamType)) {
+    // if all is well find the appropriate stream
+    this.log.log('new stream created!');
+    Stream = sources[streamType];
+  } else if (_.has(env.externalSources, streamType)) {
+    this.log.log('new external stream created!');
+    Stream = sources.external;
+    return new Stream(this, streamType, env.externalSources[streamType]);
+  } else {
+    this.error = new Error(`${streamType} is not a valid source`);
+    Stream = ErrorStream;
   }
 
   return new Stream(this);
 };
 
-
-Image.prototype.sizeReduction = function(){
-  var size = this.contents.length;
-  return (this.originalContentLength - size)/1000;
+Image.prototype.sizeReduction = function reduction() {
+  const size = this.contents.length;
+  return (this.originalContentLength - size) / 1000;
 };
 
-
-Image.prototype.sizeSaving = function(){
-  var oCnt = this.originalContentLength,
-      size = this.contents.length;
-  return ((oCnt - size)/oCnt * 100).toFixed(2);
+Image.prototype.sizeSaving = function sizeSaving() {
+  const oCnt = this.originalContentLength;
+  const size = this.contents.length;
+  return (((oCnt - size) / oCnt) * 100).toFixed(2);
 };
 
-
-Image.prototype.isFormatValid = function () {
+Image.prototype.isFormatValid = function isFormatValid() {
   if (Image.validInputFormats.indexOf(this.format) === -1) {
     this.error = new Error(
-      'The listed format (' + this.format + ') is not valid.'
+      `The listed format (${this.format}) is not valid.`
     );
   }
 };
 
 // Setter/getter for image format that normalizes jpeg formats
 Object.defineProperty(Image.prototype, 'format', {
-  get: function () { return this._format; },
-  set: function (value) {
+  get() { return this._format; },
+  set(value) {
     this._format = value.toLowerCase();
     if (this._format === 'jpg') { this._format = 'jpeg'; }
-  }
+  },
 });
 
 // Setter/getter for image contents that determines the format from the content
 // of the image to be processed.
 Object.defineProperty(Image.prototype, 'contents', {
-  get: function () { return this._contents; },
-  set: function (data) {
+  get() { return this._contents; },
+  set(data) {
     this._contents = data;
 
     if (this.isBuffer()) {
       this.format = imgType(data).ext;
       this.isFormatValid();
     }
-  }
+  },
 });
-
 
 module.exports = Image;

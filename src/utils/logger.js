@@ -1,19 +1,16 @@
-'use strict';
+/* eslint-disable no-console */
 
-var env, chalk, _, slice, prefix, queueLog, args, silent;
+const env = require('../config/environment_vars');
+const chalk = require('chalk');
+const _ = require('lodash');
 
-env       = require('../config/environment_vars');
-chalk     = require('chalk');
-_         = require('lodash');
-slice     = [].slice;
-prefix    = env.LOG_PREFIX;
-queueLog  = env.QUEUE_LOG;
-silent    = env.IR_LOG;
+const prefix = env.LOG_PREFIX;
+const queueLog = env.QUEUE_LOG;
+const silent = env.IR_LOG;
 
 chalk.enabled = true;
 
-
-function Logger(){
+function Logger() {
   this.queue = [];
   this.times = {};
   this.queueLog = queueLog;
@@ -21,47 +18,49 @@ function Logger(){
 
 Logger.prototype.colors = chalk;
 
-Logger.prototype.log = function(){
-  args = slice.call(arguments);
-  if (this.queueLog){
-    this.queue.push({ method: 'log',  args: args });
+Logger.prototype.log = function log(...args) {
+  if (this.queueLog) {
+    this.queue.push({ method: 'log', args });
   } else {
-    args.unshift('[' + chalk.green(prefix) + ']');
-    console.log.apply(console, args);
+    args.unshift(`[${chalk.green(prefix)}]`);
+    console.log(...args);
   }
 };
 
-Logger.prototype.error = function(){
-  args = slice.call(arguments);
-  if (this.queueLog){
-    this.queue.push({ method: 'error', args: args });
+Logger.prototype.error = function error(...args) {
+  if (this.queueLog) {
+    this.queue.push({ method: 'error', args });
   } else {
-    args.unshift('[' + chalk.green(prefix) + ']');
-    console.error.apply(console, args);
+    args.unshift(`[${chalk.green(prefix)}]`);
+    console.error(...args);
   }
 };
 
-Logger.prototype.time = function(key){
-  if (this.queueLog){
+Logger.prototype.time = (_key) => {
+  let key = _key;
+
+  if (this.queueLog) {
     this.times[key] = process.hrtime();
   } else {
-    key = '[' + chalk.green(prefix) + '] ' + chalk.cyan(key);
+    key = `[${chalk.green(prefix)}] ${chalk.cyan(key)}`;
     console.time.call(console, key);
   }
 };
 
-Logger.prototype.timeEnd = function(key){
-  if (this.queueLog){
-    var time = process.hrtime(this.times[key]);
-    this.queue.push({ method: 'time', key: key, time: time });
+Logger.prototype.timeEnd = (_key) => {
+  let key = _key;
+
+  if (this.queueLog) {
+    const time = process.hrtime(this.times[key]);
+    this.queue.push({ method: 'time', key, time });
   } else {
-    key = '[' + chalk.green(prefix) + '] ' + chalk.cyan(key);
+    key = `[${chalk.green(prefix)}] ${chalk.cyan(key)}`;
     console.timeEnd.call(console, key);
   }
 };
 
-Logger.prototype.flush = function(){
-  if (this.queue.length === 0){
+Logger.prototype.flush = () => {
+  if (this.queue.length === 0) {
     return;
   }
 
@@ -71,31 +70,33 @@ Logger.prototype.flush = function(){
   }
 
   console.log('');
-  _.each(this.queue, function(item){
-    var log = '';
-    log += '[' + chalk.green(prefix) + '] ';
-    switch(item.method){
-    case 'log':
-      _.each(item.args, function(arg){
-        log += arg.toString() + ' ';
-      });
-      break;
-    case 'error':
-      _.each(item.args, function(arg){
-        log += chalk.red(arg.toString()) + ' ';
-      });
-      break;
-    case 'time':
 
-      log += chalk.cyan(
-        item.key + ' - ' + chalk.bold(item.time[0] + 's ' + item.time[1]/1000000 + 'ms')
+  _.each(this.queue, (item) => {
+    let log = '';
+    log += `[${chalk.green(prefix)}] `;
+
+    // eslint-disable-next-line default-case
+    switch (item.method) {
+      case 'log':
+        _.each(item.args, (arg) => {
+          log += `${arg.toString()} `;
+        });
+        break;
+      case 'error':
+        _.each(item.args, (arg) => {
+          log += `${chalk.red(arg.toString())} `;
+        });
+        break;
+      case 'time':
+
+        log += chalk.cyan(
+        `${item.key} - ${chalk.bold(`${item.time[0]}s ${item.time[1] / 1000000}ms`)}`
       );
-      break;
+        break;
     }
+
     console.log(log);
   });
-
 };
-
 
 module.exports = Logger;

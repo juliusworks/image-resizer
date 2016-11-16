@@ -1,11 +1,10 @@
 {
   "name": "image-resizer-makeomatic",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "On-the-fly image resizing and optimization using node and sharp (libvips).",
   "main": "index.js",
   "scripts": {
-    "watch": "gulp watch",
-    "test": "gulp test"
+    "test": "mocha ./test/**/*.js"
   },
   "keywords": [
     "image",
@@ -30,39 +29,38 @@
     "node": ">=0.12.x"
   },
   "dependencies": {
-    "aws-sdk": "^2.2.37",
+    "@google-cloud/storage": "^0.4.0",
+    "aws-sdk": "^2.7.2",
     "chalk": "^1.1.1",
     "commander": "^2.2.0",
-    "concat-stream": "^1.5.1",
-    "errorhandler": "^1.0.1",
+    "concat-stream": "^1.5.2",
+    "errorhandler": "^1.5.0",
     "etag": "^1.7.0",
-    "express": "^4.9.7",
-    "gcloud": "^0.35.0",
-    "glob": "^7.0.0",
+    "express": "^4.14.0",
+    "glob": "^7.1.1",
     "image-type": "^2.0.2",
-    "lodash": "^4.5.0",
+    "lodash": "^4.17.2",
     "map-stream": "~0.1.0",
     "mkdirp": "^0.5.0",
     "morgan": "^1.0.1",
-    "request": "^2.69.0",
-    "sharp": "^0.15.0",
-    "twit": "^2.2.2"
+    "pump": "^1.0.1",
+    "request": "^2.78.0",
+    "sharp": "^0.16.2",
+    "twit": "^2.2.5"
   },
   "devDependencies": {
+    "babel-eslint": "^7.1.0",
     "chai": "^3.5.0",
-    "connect-livereload": "^0.5.4",
+    "connect-livereload": "^0.6.0",
     "dotenv": "^2.0.0",
-    "ejs": "^2.4.1",
-    "gulp": "^3.8.10",
-    "gulp-bump": "^1.0.0",
-    "gulp-jshint": "^2.0.0",
-    "gulp-mocha": "^2.2.0",
-    "gulp-nodemon": "^2.0.6",
-    "gulp-util": "^3.0.7",
-    "jshint": "^2.9.1",
-    "jshint-stylish": "^2.1.0",
+    "ejs": "^2.5.2",
+    "eslint": "^3.10.2",
+    "eslint-config-airbnb-base": "^10.0.1",
+    "eslint-plugin-import": "^2.2.0",
+    "eslint-plugin-promise": "^3.3.2",
+    "mocha": "^3.1.2",
     "sandboxed-module": "^2.0.3",
-    "sinon": "^1.17.3",
+    "sinon": "^1.17.6",
     "sinon-chai": "^2.8.0"
   }
 }

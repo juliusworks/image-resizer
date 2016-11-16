@@ -1,16 +1,8 @@
-'use strict';
+const morgan = require('morgan');
+const errorHandler = require('errorhandler');
 
-
-var express, morgan, errorHandler;
-
-express      = require('express');
-morgan       = require('morgan');
-errorHandler = require('errorhandler');
-
-module.exports = function(app){
-
+module.exports = (app) => {
   app.set('port', process.env.PORT || 3001);
   app.use(morgan('dev'));
   app.use(errorHandler());
-
 };

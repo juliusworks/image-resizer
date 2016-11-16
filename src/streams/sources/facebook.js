@@ -1,17 +1,13 @@
-'use strict';
+const stream = require('stream');
+const util = require('util');
+const env = require('../../config/environment_vars');
 
-var stream, util, env;
-
-stream  = require('stream');
-util    = require('util');
-env     = require('../../config/environment_vars');
-
-function Facebook(image){
-  /* jshint validthis:true */
-  if (!(this instanceof Facebook)){
+function Facebook(image) {
+  if (!(this instanceof Facebook)) {
     return new Facebook(image);
   }
-  stream.Readable.call(this, { objectMode : true });
+
+  stream.Readable.call(this, { objectMode: true });
   this.image = image;
   this.ended = false;
   this.key = 'facebook';
@@ -22,26 +18,23 @@ function Facebook(image){
 
 util.inherits(Facebook, stream.Readable);
 
-Facebook.prototype._read = function(){
-  var _this = this,
-      url;
+Facebook.prototype._read = function read() {
+  const _this = this;
 
-  if ( this.ended ){ return; }
+  if (this.ended) return null;
 
   // pass through if there is an error on the image object
-  if (this.image.isError()){
+  if (this.image.isError()) {
     this.ended = true;
     this.push(this.image);
     return this.push(null);
   }
 
-  var fbUid = this.image.image.split('.').slice(0,-1).join('.');
-
-  url = 'https://graph.facebook.com/' + fbUid + '/picture?type=large';
+  const fbUid = this.image.image.split('.').slice(0, -1).join('.');
+  const url = `https://graph.facebook.com/${fbUid}/picture?type=large`;
 
   this.image.log.time(this.key);
-  require('./util/fetch')(_this, url);
+  return require('./util/fetch')(_this, url);
 };
-
 
 module.exports = Facebook;

@@ -113,7 +113,7 @@ Image.prototype.isBuffer = function isBuffer() {
   return !!this.contents && Buffer.isBuffer(this.contents);
 };
 
-Image.prototype.getFile = () => {
+Image.prototype.getFile = function getFile() {
   const sources = require('./streams/sources');
   const excludes = env.EXCLUDE_SOURCES ? env.EXCLUDE_SOURCES.split(',') : [];
 

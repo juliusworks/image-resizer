@@ -1,7 +1,7 @@
 const sharp = require('sharp');
 const map = require('map-stream');
 
-module.exports = () => map((image, callback) => {
+function processor(image, callback) {
   if (image.isError()) {
     return callback(null, image);
   }
@@ -27,4 +27,6 @@ module.exports = () => map((image, callback) => {
   image.log.time('identify');
 
   return sharp(image.contents).metadata(handleResponse);
-});
+}
+
+module.exports = () => map(processor);

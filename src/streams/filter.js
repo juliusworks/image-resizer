@@ -1,7 +1,7 @@
 const map = require('map-stream');
 const filters = require('./filters');
 
-module.exports = () => map((image, callback) => {
+function processor(image, callback) {
   // pass through if there is an error
   if (image.isError()) {
     return callback(null, image);
@@ -36,4 +36,6 @@ module.exports = () => map((image, callback) => {
 
     callback(null, image);
   });
-});
+}
+
+module.exports = () => map(processor);

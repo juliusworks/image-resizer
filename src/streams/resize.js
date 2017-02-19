@@ -3,7 +3,7 @@ const map = require('map-stream');
 const env = require('../config/environment_vars');
 const dims = require('../lib/dimensions');
 
-module.exports = () => map((image, callback) => {
+function processor(image, callback) {
   // do nothing if there is an error on the image object
   if (image.isError()) {
     return callback(null, image);
@@ -164,4 +164,6 @@ module.exports = () => map((image, callback) => {
   }
 
   return null;
-});
+}
+
+module.exports = () => map(processor);

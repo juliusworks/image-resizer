@@ -151,7 +151,7 @@ function processor(image, callback) {
               image.modifiers.width,
               image.modifiers.height
             )
-            .background(env.IMAGE_PADDING_COLOR || 'white')
+            .background(image.modifiers.paddingColor || env.IMAGE_PADDING_COLOR || 'white')
             .embed();
 
             break;

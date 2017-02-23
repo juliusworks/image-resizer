@@ -23,6 +23,7 @@ Supported modifiers are:
   - filter:       eg. fsepia
   - external:     eg. efacebook
   - quality:      eg. q90
+  - background:   eg. b252525
 
 Crop modifiers:
   fit
@@ -117,6 +118,12 @@ const modifierMap = [
     type: 'integer',
     range: [1, 100],
     default: environment.IMAGE_QUALITY,
+  },
+  {
+    key: 'b',
+    desc: 'background',
+    type: 'hex',
+    default: 'ffffff',
   },
 ];
 
@@ -231,6 +238,15 @@ function parseModifiers(mods, modArr) {
             const min = mod.range[0];
             const max = mod.range[1];
             mods.quality = Math.max(min, Math.min(max, value));
+          }
+          mods.hasModStr = true;
+          break;
+        case 'background':
+          if (value.length === 6) {
+            value = string.sanitize(value, 'hex');
+            if (value.length === 6) {
+              mods.paddingColor = `#${value}`;
+            }
           }
           mods.hasModStr = true;
           break;

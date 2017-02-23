@@ -6,6 +6,8 @@ exports.sanitize = (value, type = 'number') => {
       return value.replace(/[^a-z0-9]/i, '');
     case 'alpha':
       return value.replace(/[^a-z]/i, '');
+    case 'hex':
+      return value.toLowerCase().replace(/[^0-9a-f]/, '');
     default:
       return value.replace(/[^0-9]/, '');
   }

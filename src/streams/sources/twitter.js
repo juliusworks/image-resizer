@@ -3,13 +3,13 @@
 const stream = require('stream');
 const util = require('util');
 const env = require('../../config/environment_vars');
-const Twit = require('twit');
 const _ = require('lodash');
 
 let t;
 
 /* jshint camelcase:false */
 try {
+  const Twit = require('twit');
   t = new Twit({
     consumer_key: env.TWITTER_CONSUMER_KEY,
     consumer_secret: env.TWITTER_CONSUMER_SECRET,
@@ -18,7 +18,6 @@ try {
   });
 } catch (e) {
   console.info('tw is not available', e.message);
-  // we do not have s3 data
 }
 
 

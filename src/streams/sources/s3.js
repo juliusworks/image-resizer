@@ -4,12 +4,12 @@ let client;
 let bucket;
 
 const env = require('../../config/environment_vars');
-const S3 = require('aws-sdk').S3;
 const stream = require('stream');
 const util = require('util');
 
 try {
   // create an AWS S3 client with the config data
+  const S3 = require('aws-sdk').S3;
   client = new S3({
     accessKeyId: env.AWS_ACCESS_KEY_ID,
     secretAccessKey: env.AWS_SECRET_ACCESS_KEY,

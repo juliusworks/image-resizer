@@ -158,13 +158,12 @@ if (fs.existsSync(`${process.cwd()}/named_modifiers.json`)) {
 
 // Take an array of modifiers and parse the keys and values into mods hash
 function parseModifiers(mods, modArr) {
-  let key;
-  let value;
-  let mod;
-
   _.each(modArr, (item) => {
-    key = item[0];
-    value = item.slice(1);
+    const key = item[0];
+
+    // default values
+    let value = item.slice(1);
+    let mod = getModifier(key);
 
     if (inArray(key, modKeys)) {
       // get the modifier object that responds to the listed key

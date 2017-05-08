@@ -4,7 +4,7 @@
   "description": "On-the-fly image resizing and optimization using node and sharp (libvips).",
   "main": "index.js",
   "scripts": {
-    "test": "QUEUE_LOG='' mocha ./test/**/**/*.js",
+    "test": "QUEUE_LOG='' mocha ./test/**/**/*.js ./test/**/*.js",
     "preversion": "npm test",
     "postversion": "git push && git push --tags && npm publish"
   },

@@ -5,9 +5,12 @@ const assert = require('assert');
 
 describe('Image class', () => {
   describe('#format', () => {
-    it('should normalise the format from the request', () => {
-      const img = new Img({ path: '/path/to/image.JPEG' });
+    it('should normalize the format from the request', () => {
+      const img = new Img({ path:
+        '4fb4611d312488add2ca6b7fb62ddec2/78dc05bb-594c-4a45-8e63-db9073a17411/a3320e29-3076-4efb-8f3b-64a2bb01b2ef.jpeg',
+      });
       img.format = 'JPEG';
+      assert.equal(img.path, '4fb4611d312488add2ca6b7fb62ddec2/78dc05bb-594c-4a45-8e63-db9073a17411/a3320e29-3076-4efb-8f3b-64a2bb01b2ef.jpeg');
       assert.equal(img.format, 'jpeg');
     });
 

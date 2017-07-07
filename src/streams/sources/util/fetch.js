@@ -19,7 +19,7 @@ function fetch(_this, url) {
       if (!_.includes(Img.validFormats, contentType)) {
         image.error = new Error(`Invalid content type: ${contentType}`);
       } else {
-          // Set output format to input content-type if no explicit format is provided
+      // Set output format to input content-type if no explicit format is provided
         if (!image.format) {
           image.format = contentType;
         }

@@ -84,7 +84,7 @@ function processor(image, callback) {
 
         d = dims.cropFill(image.modifiers, metadata);
 
-      // resize then crop the image
+        // resize then crop the image
         r.resize(
           d.resize.width,
           d.resize.height
@@ -147,13 +147,9 @@ function processor(image, callback) {
             break;
 
           case 'pad':
-            r.resize(
-              image.modifiers.width,
-              image.modifiers.height
-            )
-            .background(image.modifiers.paddingColor || env.IMAGE_PADDING_COLOR || 'white')
-            .embed();
-
+            r.resize(image.modifiers.width, image.modifiers.height)
+              .background(image.modifiers.paddingColor || env.IMAGE_PADDING_COLOR || 'white')
+              .embed();
             break;
         }
 

@@ -17,7 +17,7 @@ try {
     access_token_secret: env.TWITTER_ACCESS_TOKEN_SECRET,
   });
 } catch (e) {
-  console.info('tw is not available', e.message);
+  // console.info('tw is not available', e.message);
 }
 
 

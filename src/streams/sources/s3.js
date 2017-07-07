@@ -17,7 +17,7 @@ try {
   });
   bucket = env.S3_BUCKET;
 } catch (e) {
-  console.info('s3 is not available', e.message);
+  // console.info('s3 is not available', e.message);
   // we do not have s3 data
 }
 

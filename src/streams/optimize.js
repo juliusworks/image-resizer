@@ -22,10 +22,6 @@ module.exports = () => map((image, callback) => {
 
   // if a specific output format is specified, set it
   r.toFormat(image.outputFormat || image.format, {
-    trellisQuantisation: false,
-    overshootDeringing: false,
-    optimiseScans: false,
-    compressionLevel: 6,
     quality: image.modifiers.quality || 100,
     progressive: !!env.IMAGE_PROGRESSIVE,
   });

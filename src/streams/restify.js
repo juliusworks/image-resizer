@@ -59,14 +59,14 @@ ResponseWriter.prototype._write = function write(image) {
 
   if (image.modifiers.action === 'json') {
     if (this.shouldCacheResponse()) {
-      this.response.setHeader('Cache-Control', `public, max-age=${env.JSON_EXPIRY}`);
-      this.response.setHeader('Expires', this.expiresIn(env.JSON_EXPIRY));
-      this.response.setHeader('ETag', etag(image.contents));
-      this.response.setHeader('Last-Modified', (new Date(1000)).toGMTString());
-      this.response.setHeader('Vary', 'Accept-Encoding');
+      this.response.header('Cache-Control', `public, max-age=${env.JSON_EXPIRY}`);
+      this.response.header('Expires', this.expiresIn(env.JSON_EXPIRY));
+      this.response.header('ETag', etag(image.contents));
+      this.response.header('Last-Modified', (new Date(1000)).toGMTString());
+      this.response.header('Vary', 'Accept-Encoding');
     }
 
-    this.response.setHeader('Content-Type', 'application/json');
+    this.response.header('Content-Type', 'application/json');
     this.response.status(200);
     this.response.end(image.contents);
     image.log.flush();
@@ -75,14 +75,14 @@ ResponseWriter.prototype._write = function write(image) {
   }
 
   if (this.shouldCacheResponse()) {
-    this.response.setHeader('Cache-Control', `public, max-age=${image.expiry}`);
-    this.response.setHeader('Expires', this.expiresIn(image.expiry));
-    this.response.setHeader('ETag', etag(image.contents));
-    this.response.setHeader('Last-Modified', (new Date(1000)).toGMTString());
-    this.response.setHeader('Vary', 'Accept-Encoding');
+    this.response.header('Cache-Control', `public, max-age=${image.expiry}`);
+    this.response.header('Expires', this.expiresIn(image.expiry));
+    this.response.header('ETag', etag(image.contents));
+    this.response.header('Last-Modified', (new Date(1000)).toGMTString());
+    this.response.header('Vary', 'Accept-Encoding');
   }
 
-  this.response.setHeader('Content-Type', `image/${image.format}`);
+  this.response.header('Content-Type', `image/${image.format}`);
 
   if (image.isStream()) {
     image.contents.pipe(this.response);

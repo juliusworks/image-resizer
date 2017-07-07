@@ -1,6 +1,6 @@
 {
   "name": "image-resizer-makeomatic",
-  "version": "5.0.2",
+  "version": "5.0.3",
   "description": "On-the-fly image resizing and optimization using node and sharp (libvips).",
   "main": "index.js",
   "scripts": {
